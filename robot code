@@ -86,81 +86,88 @@ void loop() {
   }
 }
 
-void Ping(){
+void Ping() {
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
-  digitalWrite(trigPin,HIGH);
+  digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
   duration = pulseIn(echoPin, HIGH);
-  distance = duration*0.034/2;//distance in cm
+  distance = duration * 0.034 / 2; //distance in cm
+}
+void fowards(int stepdistance){
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != stepdistance) {
+        stepperL.setSpeed(100);
+        stepperR.setSpeed(100);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+      }
+}
+void slowfowards(int stepdistance){
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != stepdistance) {
+        stepperL.setSpeed(50);
+        stepperR.setSpeed(50);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+      }
+}
+void rotation90(){
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != rotate90) {
+        stepperL.setSpeed(50);
+        stepperR.setSpeed(-50);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+      }
+}
+void findbeacon(){
+      char letter;
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != rotate360) {
+        stepperL.setSpeed(50);
+        stepperR.setSpeed(-50);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+        irlight(letter);
+        if (letter == sig1 && firstbeacon == false) {
+          mode = 2;
+          break;
+        }
+        if (letter == sig2 && firstbeacon == true) {
+          mode = 2;
+          break;
+        }
+      }
+}
+void drive180(){
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != -100) {
+        stepperL.setSpeed(-50);
+        stepperR.setSpeed(-50);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+      }
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while (stepperL.currentPosition() != rotate180) {
+        stepperL.setSpeed(50);
+        stepperR.setSpeed(-50);
+        stepperL.runSpeed();
+        stepperR.runSpeed();
+      }
 }
 
-void irlight(){
-  if (irrec.available()){
+void irlight(char letter) {
+  if (irrec.available()) {
     letter = irrec.read();
   }
-}
-
-void Drive(){
-      switch(runmode){
-      case 1://fowards
-      stepperL.setSpeed(400);
-      stepperR.setSpeed(400);
-      break;
-      case 2://reverse
-      stepperL.setSpeed(-200);
-      stepperR.setSpeed(-200);
-      break;
-      case 3://turn 90 uses while loop as a blocking function to rotate robot
-      stepperR.setCurrentPosition(0);
-      stepperL.setCurrentPosition(0);
-      while(stepperL.currentPosition() != rotate90){//have to play with this
-        stepperL.setSpeed(200);
-        stepperR.setSpeed(-200);
-      }
-      delay(500);
-      runmode = 5;//stops robot
-      break;
-      case 4://turn 180 uses while loop as a blocking function to rotate robot
-      stepperR.setCurrentPosition(0);
-      stepperL.setCurrentPosition(0);
-      while(stepperL.currentPosition() != rotate180){
-        stepperL.setSpeed(200);
-        stepperR.setSpeed(-200);
-      }
-      delay(500);
-      runmode = 5;//stops robot
-      break;
-      case 5://stop
-      stepperL.setSpeed(0);
-      stepperR.setSpeed(0);
-      break;
-      case 6://slow down fowards
-      stepperL.setSpeed(200);
-      stepperR.setSpeed(200);
-      break;
-      case 7://rotate 360 beacon find mode
-      stepperR.setCurrentPosition(0);
-      stepperL.setCurrentPosition(0);
-      while(stepperL.currentPosition() != rotate360){
-        stepperL.setSpeed(200);
-        stepperR.setSpeed(-200);
-        irlight();
-        if (letter == sig1 && firstbeacon == false){
-          runmode = 5;
-          break;
-        }
-        if (letter == sig2 && firstbeacon == true){
-          runmode = 5;
-          break;
-        }
-      }
-      delay(500);
-      runmode = 5;//stops robot
-    }
-    stepperL.runSpeed();
-    stepperR.runSpeed();
 }
