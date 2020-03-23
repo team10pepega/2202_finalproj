@@ -56,33 +56,41 @@ void setup() {
 }
 
 void loop() {
-  if (toggle == true){
-    irlight();
-    Ping();
-    if (distance <= mindistance && irsignal == false){//checks for collision distance if under rotate
-      runmode = 3;
-    }
-    else if(irsignal == false) {
-      runmode =7;
-    }
-    else{//otherwise drive and beaconfind
-      runmode = 1;
-    }
-    
-    if (irsignal == true){//ir reciever sees beacon
-      if (distance <= beacondistance){//goes dead slow if it reaches the close beacon distance
-        runmode = 6;
-      }else{//otherwise run at normal speed
-        runmode = 1;////////////FIIIIIIIXXXXXXXXX
+  int stepdistance;
+  Serial.println(mode);
+  Serial.println(distance);
+  switch (mode) {
+    case 1://drive and find
+      Ping();
+      if (distance <= mindistance) {
+        rotation90();
+      } else if (distance >= searchthreshold) {
+        stepdistance = distance / 0.1;
+        fowards(stepdistance);
+        findbeacon();
+      } else if (distance < searchthreshold && distance > mindistance) {
+        fowards(stepdistance);
       }
-    }
-    Drive();
-  }
-  if (toggle == false){
-    buttonState = digitalRead(button1);
-    if (buttonState == 1){
-      toggle == true;
-    }
+      break;
+    case 2://drive towards beacon
+      Ping();
+      stepdistance = (distance-20) / 0.1;
+      fowards(stepdistance);
+      distance = 20;
+      stepdistance = distance/0.1;
+      slowfowards(stepdistance);
+      drive180();
+      if (firstbeacon == false) {
+        firstbeacon = true;
+        mode = 1;
+      } else {
+        mode = 3;
+      }
+      break;
+    case 3://bridge stuff
+      stepperL.stop();
+      stepperR.stop();
+      break;
   }
 }
 
