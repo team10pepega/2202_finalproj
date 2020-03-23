@@ -18,12 +18,26 @@ const int rotate90 = 600;//steps needed for 90 degree turn
 const int rotate180 = 1200;//steps needed for 180 degree turn
 const int rotate360 = 2400;//steps needed for 360 degree turn
 
+//variables and pins for ultrasonic
+const int trigPin = 5;
+const int echoPin = 6;
+long duration;
+long distance;
+long mindistance = 10;
+long beacondistance = 5;
+
+//variables and pins for ir reciever
+SoftwareSerial irrec(A0, A0);
 char sig1 = '0';
 char sig2 = '5';
 char letter;
 boolean firstbeacon = false;
 boolean irsignal = false;
 
+//variables and pins for button
+const int button1 = 4;
+int buttonState = 0;
+boolean toggle = false;
 
 void setup() {
   Serial.begin(9600);
@@ -41,8 +55,53 @@ void setup() {
   pinMode(button1, INPUT);
 }
 
-void loop(){
+void loop() {
+  if (toggle == true){
+    irlight();
+    Ping();
+    if (distance <= mindistance && irsignal == false){//checks for collision distance if under rotate
+      runmode = 3;
+    }
+    else if(irsignal == false) {
+      runmode =7;
+    }
+    else{//otherwise drive and beaconfind
+      runmode = 1;
+    }
+    
+    if (irsignal == true){//ir reciever sees beacon
+      if (distance <= beacondistance){//goes dead slow if it reaches the close beacon distance
+        runmode = 6;
+      }else{//otherwise run at normal speed
+        runmode = 1;////////////FIIIIIIIXXXXXXXXX
+      }
+    }
+    Drive();
+  }
+  if (toggle == false){
+    buttonState = digitalRead(button1);
+    if (buttonState == 1){
+      toggle == true;
+    }
+  }
+}
 
+void Ping(){
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration*0.034/2;//distance in cm
+}
+
+void irlight(){
+  if (irrec.available()){
+    letter = irrec.read();
+  }
 }
 
 void Drive(){
