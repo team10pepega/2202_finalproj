@@ -1,0 +1,107 @@
+#include <AccelStepper.h>
+#include <SoftwareSerial.h>
+
+//pins for stepper motors
+#define motorInterfaceType 1
+#define dirPinR 1
+#define stepPinR 0
+#define dirPinL 3
+#define stepPinL 2
+
+AccelStepper stepperR = AccelStepper(motorInterfaceType, stepPinR, dirPinR);
+AccelStepper stepperL = AccelStepper(motorInterfaceType, stepPinL, dirPinL);
+
+//drivemode variables
+int runmode = 1;
+//variables needed for adjustment in drivemode
+const int rotate90 = 600;//steps needed for 90 degree turn
+const int rotate180 = 1200;//steps needed for 180 degree turn
+const int rotate360 = 2400;//steps needed for 360 degree turn
+
+char sig1 = '0';
+char sig2 = '5';
+char letter;
+boolean firstbeacon = false;
+boolean irsignal = false;
+
+
+void setup() {
+  Serial.begin(9600);
+  
+  stepperR.setMaxSpeed(1000);
+  stepperL.setMaxSpeed(1000);
+  stepperR.setAcceleration(30);
+  stepperL.setAcceleration(30);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  irrec.begin(2400);
+
+  pinMode(button1, INPUT);
+}
+
+void loop(){
+
+}
+
+void Drive(){
+      switch(runmode){
+      case 1://fowards
+      stepperL.setSpeed(400);
+      stepperR.setSpeed(400);
+      break;
+      case 2://reverse
+      stepperL.setSpeed(-200);
+      stepperR.setSpeed(-200);
+      break;
+      case 3://turn 90 uses while loop as a blocking function to rotate robot
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while(stepperL.currentPosition() != rotate90){//have to play with this
+        stepperL.setSpeed(200);
+        stepperR.setSpeed(-200);
+      }
+      delay(500);
+      runmode = 5;//stops robot
+      break;
+      case 4://turn 180 uses while loop as a blocking function to rotate robot
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while(stepperL.currentPosition() != rotate180){
+        stepperL.setSpeed(200);
+        stepperR.setSpeed(-200);
+      }
+      delay(500);
+      runmode = 5;//stops robot
+      break;
+      case 5://stop
+      stepperL.setSpeed(0);
+      stepperR.setSpeed(0);
+      break;
+      case 6://slow down fowards
+      stepperL.setSpeed(200);
+      stepperR.setSpeed(200);
+      break;
+      case 7://rotate 360 beacon find mode
+      stepperR.setCurrentPosition(0);
+      stepperL.setCurrentPosition(0);
+      while(stepperL.currentPosition() != rotate360){
+        stepperL.setSpeed(200);
+        stepperR.setSpeed(-200);
+        irlight();
+        if (letter == sig1 && firstbeacon == false){
+          runmode = 5;
+          break;
+        }
+        if (letter == sig2 && firstbeacon == true){
+          runmode = 5;
+          break;
+        }
+      }
+      delay(500);
+      runmode = 5;//stops robot
+    }
+    stepperL.runSpeed();
+    stepperR.runSpeed();
+}
