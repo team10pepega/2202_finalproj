@@ -41,7 +41,7 @@ boolean toggle = false;
 
 void setup() {
   Serial.begin(9600);
-  
+
   stepperR.setMaxSpeed(1000);
   stepperL.setMaxSpeed(1000);
   stepperR.setAcceleration(30);
@@ -59,6 +59,7 @@ void loop() {
   int stepdistance;
   Serial.println(mode);
   Serial.println(distance);
+  hi
   switch (mode) {
     case 1://drive and find
       Ping();
